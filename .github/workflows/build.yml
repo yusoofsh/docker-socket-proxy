@@ -37,7 +37,9 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/yusoofsh/docker-socket-proxy:security-sha-${{ github.sha }}
+          tags: |
+            ghcr.io/yusoofsh/docker-socket-proxy:latest
+            ghcr.io/yusoofsh/docker-socket-proxy:security-sha-${{ github.sha }}
           provenance: mode=max
           sbom: true
           cache-from: type=gha,scope=docker-socket-proxy
