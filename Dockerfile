@@ -45,11 +45,11 @@ ENV ALLOW_RESTARTS=0 \
 
 COPY --from=source /src/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --from=source /src/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg.template
+USER root
 RUN apk add --no-cache 'libcrypto3=3.5.8-r0' 'libssl3=3.5.8-r0' \
 	&& touch /var/lib/haproxy/server-state
 
 LABEL org.opencontainers.image.source="https://github.com/yusoofsh/docker-socket-proxy" \
 	org.opencontainers.image.revision="2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d"
 
-USER root
 CMD ["haproxy", "-f", "/tmp/haproxy.cfg"]
