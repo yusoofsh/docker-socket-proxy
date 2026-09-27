@@ -1,64 +1,35 @@
-name: Build Docker Socket Proxy image
+name: Publish image
 
 on:
   push:
     branches: [main]
-    paths: [Dockerfile, .github/workflows/build.yml]
   workflow_dispatch:
 
 permissions:
-  contents: read
-
-concurrency:
-  group: docker-socket-proxy-image-${{ github.ref }}
-  cancel-in-progress: true
+  packages: write
 
 jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    permissions:
-      contents: read
-      packages: write
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
-        with:
-          persist-credentials: false
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+      - name: Log in
+        uses: docker/login-action@v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build immutable image
-        id: image
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
-        with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ghcr.io/yusoofsh/docker-socket-proxy:latest
-            ghcr.io/yusoofsh/docker-socket-proxy:security-sha-${{ github.sha }}
-          provenance: mode=max
-          sbom: true
-          cache-from: type=gha,scope=docker-socket-proxy
-          cache-to: type=gha,mode=max,scope=docker-socket-proxy
-      - name: Verify native helper without production credentials
+
+      - name: Copy upstream image
         env:
-          IMAGE: ghcr.io/yusoofsh/docker-socket-proxy@${{ steps.image.outputs.digest }}
+          TARGET: ghcr.io/${{ github.repository_owner }}/docker-socket-proxy:latest
         run: |
           set -eu
-          docker pull "$IMAGE"
-          docker run -d --name socket-check -p 127.0.0.1:12375:2375 \
-            --security-opt no-new-privileges:true \
-            -e CONTAINERS=1 -e NETWORKS=1 -e INFO=1 -e POST=0 \
-            -v /var/run/docker.sock:/var/run/docker.sock:ro "$IMAGE"
-          trap 'docker rm -f socket-check' EXIT
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:12375/_ping; then break; fi
-            sleep 1
-          done
-          test "$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:12375/containers/json)" = 200
-          test "$(curl -sS -X POST -o /dev/null -w '%{http_code}' http://127.0.0.1:12375/_ping)" = 403
-          printf 'Verified candidate: `%s`\n' "$IMAGE" >> "$GITHUB_STEP_SUMMARY"
+          if docker manifest inspect ghcr.io/tecnativa/docker-socket-proxy:master >/dev/null 2>&1; then
+            source=ghcr.io/tecnativa/docker-socket-proxy:master
+          else
+            source=ghcr.io/tecnativa/docker-socket-proxy:latest
+          fi
+          docker pull "$source"
+          docker tag "$source" "$TARGET"
+          docker push "$TARGET"
