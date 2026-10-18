@@ -9,7 +9,7 @@ RUN echo '4e72220d7ab7aabaae70dc3402680bb85864a781c58177f37815a25934dfc031  /tmp
 	&& mkdir -p /src \
 	&& tar -xzf /tmp/source.tar.gz --strip-components=1 -C /src
 
-FROM haproxy:3.4.2-alpine@sha256:0878b11eb64c433be1b0f578a584b8aca12f6caaa64c8f239b8b556c0dd5eeeb
+FROM haproxy:3.4-alpine@sha256:251da69821897ec8c4819f12b1babbc4b71f562943addc9b9eb14bb6ece40dc6
 
 EXPOSE 2375
 ENV ALLOW_RESTARTS=0 \
@@ -46,10 +46,11 @@ ENV ALLOW_RESTARTS=0 \
 COPY --from=source /src/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --from=source /src/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg.template
 USER root
-RUN apk add --no-cache 'libcrypto3=3.5.8-r0' 'libssl3=3.5.8-r0' \
+RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' \
 	&& touch /var/lib/haproxy/server-state
 
 LABEL org.opencontainers.image.source="https://github.com/yusoofsh/docker-socket-proxy" \
-	org.opencontainers.image.revision="2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d"
+	org.opencontainers.image.revision="2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d" \
+	io.yusoofsh.upstream.revision="2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d"
 
 CMD ["haproxy", "-f", "/tmp/haproxy.cfg"]
