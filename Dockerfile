@@ -4,8 +4,8 @@
 # directly so the ACLs and entrypoint cannot drift from the source branch.
 FROM alpine:3.23@sha256:85fe1e81d6758c208f3e1eed4338a1997e19d4be002d4dd32d3100c9a8c010a0 AS source
 
-ADD https://github.com/Tecnativa/docker-socket-proxy/archive/2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d.tar.gz /tmp/source.tar.gz
-RUN echo '4e72220d7ab7aabaae70dc3402680bb85864a781c58177f37815a25934dfc031  /tmp/source.tar.gz' | sha256sum -c - \
+ADD https://github.com/Tecnativa/docker-socket-proxy/archive/1d2966298e83ca5253e1b95b54e9cf6d081855af.tar.gz /tmp/source.tar.gz
+RUN echo '9ec0035edafe5dea7900b2f22cdf805a06d9862dbc1a329a0a12ac73bb09fde9  /tmp/source.tar.gz' | sha256sum -c - \
 	&& mkdir -p /src \
 	&& tar -xzf /tmp/source.tar.gz --strip-components=1 -C /src
 
@@ -50,7 +50,7 @@ RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' \
 	&& touch /var/lib/haproxy/server-state
 
 LABEL org.opencontainers.image.source="https://github.com/yusoofsh/docker-socket-proxy" \
-	org.opencontainers.image.revision="2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d" \
-	io.yusoofsh.upstream.revision="2e118a0c0c66e1831f68b7afd6d49ad3e2f96b5d"
+	org.opencontainers.image.revision="1d2966298e83ca5253e1b95b54e9cf6d081855af" \
+	io.yusoofsh.upstream.revision="1d2966298e83ca5253e1b95b54e9cf6d081855af"
 
 CMD ["haproxy", "-f", "/tmp/haproxy.cfg"]
