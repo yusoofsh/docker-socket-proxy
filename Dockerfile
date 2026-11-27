@@ -43,8 +43,8 @@ ENV ALLOW_RESTARTS=0 \
 	VERSION=1 \
 	VOLUMES=0
 
-COPY --from=source /src/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-COPY --from=source /src/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg.template
+COPY --from=source /src/system_files/usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY --from=source /src/system_files/usr/local/etc/haproxy/haproxy.cfg.template /usr/local/etc/haproxy/haproxy.cfg.template
 USER root
 RUN apk add --no-cache 'libcrypto3>=3.5.8-r0' 'libssl3>=3.5.8-r0' \
 	&& touch /var/lib/haproxy/server-state
